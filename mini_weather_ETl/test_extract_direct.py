@@ -36,15 +36,36 @@ def extract_test(api_key, city):
 def test_extract():
     """Test the extract function with sample data"""
     
-    # Load environment variables from the env file
-    load_dotenv('env')
+    # Get the directory where this script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(script_dir, '.env')
+    
+    print(f"🔍 Looking for .env file at: {env_path}")
+    print(f"📂 .env file exists: {os.path.exists(env_path)}")
+    
+    # Load environment variables from the .env file
+    load_dotenv(env_path)
     
     # Get the API key from environment
     api_key = os.getenv('WEATHER_API_KEY')
     
     if not api_key:
         print("❌ Error: WEATHER_API_KEY not found in environment file")
-        return False
+        print("🔧 Trying to load from 'env' file as backup...")
+        
+        # Try the old 'env' file as backup
+        old_env_path = os.path.join(script_dir, 'env')
+        if os.path.exists(old_env_path):
+            # Read the old env file manually
+            with open(old_env_path, 'r') as f:
+                for line in f:
+                    if line.startswith('WEATHER_API_KEY='):
+                        api_key = line.split('=')[1].strip().strip('"')
+                        print(f"✅ Found API key in old env file")
+                        break
+        
+        if not api_key:
+            return False
     
     print(f"✅ API Key loaded: {api_key[:10]}...")
     
