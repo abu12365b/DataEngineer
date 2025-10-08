@@ -1,22 +1,22 @@
 import requests
+import pandas as pd
 
 def extract(api_key, city):
-    """
-    Fetch current weather data for a city from OpenWeatherMap API.
-    """
     url = "https://api.openweathermap.org/data/2.5/weather"
-    params = {
-        "q": city,
-        "appid": api_key,
-        "units": "metric"
-    }
-    response = requests.get(url, params=params)
-    response.raise_for_status()  # raise error if API call fails
-    return response.json()
+    params = {"q": city, "appid": api_key, "units": "metric"}
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        return {
+            "city": city,
+            "temperature": data["main"]["temp"],
+            "humidity": data["main"]["humidity"],
+            "weather": data["weather"][0]["description"],
+            "wind_speed": data["wind"]["speed"],
+            "timestamp": pd.Timestamp.now()
+        }
+    except requests.RequestException as e:
+        print(f"Error fetching weather data for {city}: {e}")
+        return None
 
-
-<<<<<<< HEAD
-=======
-data = extract("", "Montreal,CA")
-print(data)
->>>>>>> 41e8cbb46e74e328b84263fc4b679edeb72da770
