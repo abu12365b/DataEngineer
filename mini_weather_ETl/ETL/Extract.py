@@ -15,3 +15,8 @@ def extract(api_key, city):
     return response.json()
 
 
+<<<<<<< HEAD
+=======
+data = extract("", "Montreal,CA")
+print(data)
+>>>>>>> 41e8cbb46e74e328b84263fc4b679edeb72da770
