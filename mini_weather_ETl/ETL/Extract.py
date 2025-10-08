@@ -15,5 +15,5 @@ def extract(api_key, city):
     return response.json()
 
 
-data = extract("c3ad1f1d0028cb8c255bc023fa21d67a", "Montreal,CA")
+data = extract("", "Montreal,CA")
 print(data)
