@@ -17,47 +17,28 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def extract_test(api_key, city):
     """
-    This is our pretend weather function! 
-    It's like asking "What's the weather like outside?" but to the computer!
+    Test the actual extract function with comprehensive data extraction
     """
+    # Import the updated extract function
+    import sys
+    import os
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'ETL'))
     
-    # This is the special address where weather lives on the internet
-    # Like knowing your friend's house address so you can visit them
-    url = "https://api.openweathermap.org/data/2.5/weather"
-    
-    # These are the questions we want to ask about the weather
-    # Like asking "How's the weather in Toronto?" and showing our ID card
-    params = {"q": city, "appid": api_key, "units": "metric"}
-    
-    try:  # Let's try to get the weather! (Like trying to reach a cookie jar)
+    try:
+        from ETL.Extract import extract
         
-        # Go ask the internet about the weather (but be nice and patient)
-        # If it takes too long (more than 10 seconds), we'll give up
-        # verify=False means "don't worry about checking if it's super safe"
-        response = requests.get(url, params=params, timeout=10, verify=False)
+        # Use the actual extract function
+        df = extract(api_key, city)
         
-        # Check if the internet was nice to us and gave us a good answer
-        response.raise_for_status()
-        
-        # Turn the internet's answer into something we can understand
-        # Like translating "woof woof" from a dog into "I'm happy!"
-        data = response.json()
-        
-        # Pick out the important weather information and organize it nicely
-        # Like sorting your toys into different boxes
-        return {
-            "city": city,  # Which city we asked about
-            "temperature": data["main"]["temp"],  # How hot or cold it feels
-            "humidity": data["main"]["humidity"],  # How sticky the air feels
-            "weather": data["weather"][0]["description"],  # Is it sunny or rainy?
-            "wind_speed": data["wind"]["speed"],  # How fast the wind is blowing
-            "timestamp": pd.Timestamp.now()  # When we asked this question
-        }
-        
-    except requests.RequestException as e:  # Oopsie! Something went wrong!
-        # Tell mommy and daddy what went wrong
-        print(f"Error fetching weather data for {city}: {e}")
-        # Give back nothing (like when you can't find your toy)
+        if not df.empty:
+            # Convert DataFrame to dictionary for display
+            record = df.iloc[0].to_dict()
+            return record
+        else:
+            return None
+            
+    except Exception as e:
+        print(f"Error testing extract function for {city}: {e}")
         return None
 
 def test_extract():
@@ -133,12 +114,27 @@ def test_extract():
         # Did we get a good answer about the weather?
         if result:
             # Hooray! We got weather information! Let's show everyone!
-            print("✅ Success! Weather data extracted:")
-            print(f"   🌡️  Temperature: {result['temperature']}°C")  # How hot/cold
-            print(f"   💧 Humidity: {result['humidity']}%")  # How sticky the air is
-            print(f"   ☁️  Weather: {result['weather']}")  # Sunny? Rainy? Cloudy?
-            print(f"   💨 Wind Speed: {result['wind_speed']} m/s")  # How windy
-            print(f"   ⏰ Timestamp: {result['timestamp']}")  # When we asked
+            print("✅ Success! Comprehensive weather data extracted:")
+            print(f"   �️  City: {result.get('city_name', 'N/A')}, {result.get('country_code', 'N/A')}")
+            print(f"   🌍 Coordinates: {result.get('latitude', 'N/A')}, {result.get('longitude', 'N/A')}")
+            print(f"   �🌡️  Temperature: {result.get('temperature', 'N/A')}°C (feels like {result.get('feels_like', 'N/A')}°C)")
+            print(f"   🌡️  Min/Max: {result.get('temp_min', 'N/A')}°C / {result.get('temp_max', 'N/A')}°C")
+            print(f"   💧 Humidity: {result.get('humidity', 'N/A')}%")
+            print(f"   📊 Pressure: {result.get('pressure', 'N/A')} hPa")
+            print(f"   ☁️  Weather: {result.get('weather_main', 'N/A')} - {result.get('weather_description', 'N/A')}")
+            print(f"   ☁️  Cloudiness: {result.get('cloudiness', 'N/A')}%")
+            print(f"   💨 Wind: {result.get('wind_speed', 'N/A')} m/s at {result.get('wind_direction', 'N/A')}°")
+            if result.get('wind_gust'):
+                print(f"   💨 Wind Gust: {result.get('wind_gust', 'N/A')} m/s")
+            print(f"   👁️  Visibility: {result.get('visibility', 'N/A')} meters")
+            if result.get('rain_1h') or result.get('rain_3h'):
+                print(f"   🌧️  Rain: {result.get('rain_1h', 0)}mm (1h), {result.get('rain_3h', 0)}mm (3h)")
+            if result.get('snow_1h') or result.get('snow_3h'):
+                print(f"   ❄️  Snow: {result.get('snow_1h', 0)}mm (1h), {result.get('snow_3h', 0)}mm (3h)")
+            print(f"   🌅 Sunrise: {result.get('sunrise', 'N/A')}")
+            print(f"   🌇 Sunset: {result.get('sunset', 'N/A')}")
+            print(f"   ⏰ Data Time: {result.get('data_timestamp', 'N/A')}")
+            print(f"   📥 Extracted: {result.get('extraction_timestamp', 'N/A')}")
             success_count += 1  # Add one to our success counter!
         else:
             # Aww, something went wrong. That's okay, we tried our best!

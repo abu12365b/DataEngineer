@@ -32,21 +32,54 @@ class TestExtractFunction(unittest.TestCase):
         self.api_key = "test_api_key"
         self.city = "Toronto,CA"
         
-        # This is our pretend weather answer that we'll use for testing
-        # Like having a pretend conversation: "What's the weather?" "It's sunny and warm!"
+        # This is our pretend comprehensive weather answer that we'll use for testing
+        # Like having a detailed conversation about all aspects of weather
         self.mock_response_data = {
-            "main": {
-                "temp": 25.5,  # Pretend temperature (nice and warm!)
-                "humidity": 60  # Pretend stickiness of the air
-            },
+            "coord": {"lon": -79.3832, "lat": 43.6532},
             "weather": [
                 {
-                    "description": "clear sky"  # Pretend weather description (sunny!)
+                    "id": 800,
+                    "main": "Clear",
+                    "description": "clear sky",
+                    "icon": "01d"
                 }
             ],
+            "base": "stations",
+            "main": {
+                "temp": 25.5,
+                "feels_like": 27.2,
+                "temp_min": 23.1,
+                "temp_max": 28.0,
+                "pressure": 1013,
+                "humidity": 60,
+                "sea_level": 1013,
+                "grnd_level": 1008
+            },
+            "visibility": 10000,
             "wind": {
-                "speed": 5.5  # Pretend wind speed (gentle breeze!)
-            }
+                "speed": 5.5,
+                "deg": 220,
+                "gust": 8.2
+            },
+            "clouds": {
+                "all": 20
+            },
+            "rain": {
+                "1h": 0.5,
+                "3h": 1.2
+            },
+            "dt": 1696867200,
+            "sys": {
+                "type": 2,
+                "id": 2043265,
+                "country": "CA",
+                "sunrise": 1696848600,
+                "sunset": 1696890000
+            },
+            "timezone": -14400,
+            "id": 6167865,
+            "name": "Toronto",
+            "cod": 200
         }
     
     @patch('ETL.Extract.requests.get')
@@ -73,12 +106,45 @@ class TestExtractFunction(unittest.TestCase):
         self.assertIsNotNone(result)  # Make sure we got something back (not nothing!)
         self.assertFalse(result.empty)  # Make sure our table isn't empty (has stuff in it!)
         self.assertEqual(len(result), 1)  # Make sure we got exactly one row of weather info
-        self.assertEqual(result.iloc[0]['city'], self.city)  # Check if city name is right
-        self.assertEqual(result.iloc[0]['temperature'], 25.5)  # Check if temperature is right
-        self.assertEqual(result.iloc[0]['humidity'], 60)  # Check if humidity is right
-        self.assertEqual(result.iloc[0]['weather'], 'clear sky')  # Check if weather description is right
-        self.assertEqual(result.iloc[0]['wind_speed'], 5.5)  # Check if wind speed is right
-        self.assertIsInstance(result.iloc[0]['timestamp'], pd.Timestamp)  # Check if time stamp looks right
+        
+        # Check basic info
+        self.assertEqual(result.iloc[0]['query_city'], self.city)  # Check original query
+        self.assertEqual(result.iloc[0]['city_name'], 'Toronto')  # Check actual city name
+        self.assertEqual(result.iloc[0]['country_code'], 'CA')  # Check country code
+        
+        # Check coordinates
+        self.assertEqual(result.iloc[0]['longitude'], -79.3832)
+        self.assertEqual(result.iloc[0]['latitude'], 43.6532)
+        
+        # Check temperature data
+        self.assertEqual(result.iloc[0]['temperature'], 25.5)
+        self.assertEqual(result.iloc[0]['feels_like'], 27.2)
+        self.assertEqual(result.iloc[0]['temp_min'], 23.1)
+        self.assertEqual(result.iloc[0]['temp_max'], 28.0)
+        
+        # Check atmospheric data
+        self.assertEqual(result.iloc[0]['humidity'], 60)
+        self.assertEqual(result.iloc[0]['pressure'], 1013)
+        
+        # Check weather description
+        self.assertEqual(result.iloc[0]['weather_description'], 'clear sky')
+        self.assertEqual(result.iloc[0]['weather_main'], 'Clear')
+        
+        # Check wind data
+        self.assertEqual(result.iloc[0]['wind_speed'], 5.5)
+        self.assertEqual(result.iloc[0]['wind_direction'], 220)
+        self.assertEqual(result.iloc[0]['wind_gust'], 8.2)
+        
+        # Check other data
+        self.assertEqual(result.iloc[0]['cloudiness'], 20)
+        self.assertEqual(result.iloc[0]['visibility'], 10000)
+        self.assertEqual(result.iloc[0]['rain_1h'], 0.5)
+        
+        # Check timestamps
+        self.assertIsInstance(result.iloc[0]['extraction_timestamp'], pd.Timestamp)
+        self.assertIsInstance(result.iloc[0]['data_timestamp'], pd.Timestamp)
+        self.assertIsInstance(result.iloc[0]['sunrise'], pd.Timestamp)
+        self.assertIsInstance(result.iloc[0]['sunset'], pd.Timestamp)
     
     @patch('ETL.Extract.requests.get')
     def test_extract_api_error(self, mock_get):
@@ -109,9 +175,18 @@ class TestExtractFunction(unittest.TestCase):
         """
         from ETL.Extract import extract
         
-        # These are all the things we expect to see in our weather table
-        # Like a list of all the toys that should be in your toy box
-        expected_columns = ['city', 'temperature', 'humidity', 'weather', 'wind_speed', 'timestamp']
+        # These are all the things we expect to see in our comprehensive weather table
+        # Like a list of all the toys that should be in your expanded toy box
+        expected_columns = [
+            'city_name', 'country_code', 'city_id', 'timezone', 'query_city',
+            'longitude', 'latitude',
+            'temperature', 'feels_like', 'temp_min', 'temp_max', 'pressure', 'humidity',
+            'sea_level_pressure', 'ground_level_pressure',
+            'weather_main', 'weather_description', 'weather_icon', 'weather_id',
+            'wind_speed', 'wind_direction', 'wind_gust',
+            'cloudiness', 'rain_1h', 'rain_3h', 'snow_1h', 'snow_3h', 'visibility',
+            'sunrise', 'sunset', 'data_timestamp', 'extraction_timestamp', 'raw_api_response'
+        ]
         
         # Let's pretend to get weather info so we can check the table structure
         # Like playing pretend restaurant to see if you know how to set the table
