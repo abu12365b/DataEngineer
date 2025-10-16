@@ -5,6 +5,7 @@
 .env.staging
 .env.development
 *.env
+supabasecre
 
 # Python
 __pycache__/
