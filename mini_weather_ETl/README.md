@@ -357,9 +357,9 @@ mini_weather_ETl/
 
 | Variable | Description | Required | Example |
 |----------|-------------|----------|---------|
-| `WEATHER_API_KEY` | OpenWeatherMap API key | ✅ Yes | ` |
-| `SUPABASE_URL` | Your Supabase project URL | ✅ Yes | `` |
-| `SUPABASE_KEY` | Supabase service_role key | ✅ Yes | `` |
+| `WEATHER_API_KEY` | OpenWeatherMap API key | ✅ Yes | 
+| `SUPABASE_URL` | Your Supabase project URL | ✅ Yes | 
+| `SUPABASE_KEY` | Supabase service_role key | ✅ Yes |
 | `TABLE_NAME` | Target table name | ⚠️ Optional | `Weather_data` (default) |
 
 ### Cities Configuration
