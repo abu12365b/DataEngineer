@@ -22,6 +22,7 @@ $Settings = New-ScheduledTaskSettingsSet `
     -DontStopIfGoingOnBatteries `
     -StartWhenAvailable `
     -RunOnlyIfNetworkAvailable `
+    -WakeToRun `
     -ExecutionTimeLimit (New-TimeSpan -Hours 1)
 
 # Get current user
