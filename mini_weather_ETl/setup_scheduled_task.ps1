@@ -3,8 +3,8 @@
 
 $TaskName = "DailyWeatherETL"
 $ScriptPath = "c:\Users\abuba\OneDrive\Desktop\Github\DataEngineer\mini_weather_ETl\run_etl_daily.bat"
-$Description = "Runs weather data ETL pipeline daily at 6:00 AM"
-$Time = "6:00AM"
+$Description = "Runs weather data ETL pipeline daily at 9:00 AM"
+$Time = "9:00AM"
 
 Write-Host "Creating scheduled task: $TaskName" -ForegroundColor Green
 Write-Host "Script to run: $ScriptPath" -ForegroundColor Cyan
@@ -26,7 +26,7 @@ $Settings = New-ScheduledTaskSettingsSet `
     -ExecutionTimeLimit (New-TimeSpan -Hours 1)
 
 # Get current user
-$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType Interactive
+$Principal = New-ScheduledTaskPrincipal -UserId "$env:USERDOMAIN\$env:USERNAME" -LogonType S4U -RunLevel Highest
 
 # Register the scheduled task
 try {
